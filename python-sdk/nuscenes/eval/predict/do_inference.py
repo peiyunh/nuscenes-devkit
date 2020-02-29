@@ -11,7 +11,7 @@ from nuscenes.eval.common.config import config_factory
 from nuscenes.eval.predict.data_classes import Prediction
 from nuscenes.eval.predict.splits import get_prediction_challenge_split
 from nuscenes.predict import PredictHelper
-from nuscenes.predict.models import ConstantVelocityHeading
+from nuscenes.predict.models.physics import ConstantVelocityHeading
 
 
 def do_inference_for_submission(helper: PredictHelper,

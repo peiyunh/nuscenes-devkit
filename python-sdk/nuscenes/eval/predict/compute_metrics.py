@@ -1,7 +1,7 @@
 # nuScenes dev-kit.
 # Code written by Freddy Boulton, 2020.
 """ Script for computing metrics for a submission to the nuscenes prediction challenge. """
-
+import argparse
 import json
 import os
 from collections import defaultdict
@@ -34,7 +34,8 @@ def compute_metrics(predictions: List[Dict[str, Any]],
         prediction = Prediction.deserialize(prediction_str)
         ground_truth = helper.get_future_for_agent(prediction.instance, prediction.sample,
                                                    config.seconds, in_agent_frame=True)
-
+        if np.all(np.sqrt(np.sum(ground_truth**2, axis=1)) < 1):
+            import ipdb; ipdb.set_trace()
         for metric in config.metrics:
             containers[metric.name][i] = metric(ground_truth, prediction)
 
@@ -66,3 +67,15 @@ def main(version: str, data_root: str, submission_path: str, submission_name: st
 
     results = compute_metrics(predictions, helper, config)
     json.dump(results, open(os.path.join(submission_path, f"{submission_name}_metrics.json"), "w"))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Evaluate.')
+    parser.add_argument('--version', help='NuScenes version number.')
+    parser.add_argument('--data_root', help='Root directory for NuScenes json files.')
+    parser.add_argument('--output_dir', help='Directory to store output file.')
+    parser.add_argument('--submission_name', help='Name of the submission to use for the results file.')
+    parser.add_argument('--config_name', help='Name of the config file to use', default='predict_2020_icra')
+    
+    args = parser.parse_args()
+    main(args.version, args.data_root, args.output_dir, args.submission_name, args.config_name)

@@ -9,7 +9,7 @@ from nuscenes import NuScenes
 from nuscenes.eval.common.config import config_factory
 from nuscenes.eval.predict.splits import get_prediction_challenge_split
 from nuscenes.predict import PredictHelper
-from nuscenes.predict.models.physics import ConstantVelocityHeading, PhysicsOracle
+from nuscenes.predict.models.physics import *
 
 
 def main(version: str, data_root: str,
@@ -28,16 +28,28 @@ def main(version: str, data_root: str,
     dataset = get_prediction_challenge_split(split_name)
     config = config_factory(config_name)
     oracle = PhysicsOracle(config.seconds, helper)
-    cv_heading = ConstantVelocityHeading(config.seconds, helper)
+    constant_velocity_heading = ConstantVelocityHeading(config.seconds, helper)
+    constant_acceleration_heading = ConstantAccelerationHeading(config.seconds, helper)
+    constant_speed_yaw_rate = ConstantSpeedYawRate(config.seconds, helper)
+    constant_acceleration_yaw_rate = ConstantAccelerationYawRate(config.seconds, helper)
 
-    cv_preds = []
+    cvh_preds = []
+    cah_preds = []
+    csyr_preds = []
+    cayr_preds = []
     oracle_preds = []
     for token in dataset:
-        cv_preds.append(cv_heading(token).serialize())
+        cvh_preds.append(constant_velocity_heading(token).serialize())
+        cah_preds.append(constant_acceleration_heading(token).serialize())
+        csyr_preds.append(constant_speed_yaw_rate(token).serialize())
+        cayr_preds.append(constant_acceleration_yaw_rate(token).serialize())
         oracle_preds.append(oracle(token).serialize())
 
-    json.dump(cv_preds, open(os.path.join(output_dir, "cv_preds.json"), "w"))
-    json.dump(oracle_preds, open(os.path.join(output_dir, "oracle_preds.json"), "w"))
+    json.dump(cvh_preds, open(os.path.join(output_dir, "constant_velocity_heading_inference.json"), "w"))
+    json.dump(cah_preds, open(os.path.join(output_dir, "constant_acceleration_heading_inference.json"), "w"))
+    json.dump(csyr_preds, open(os.path.join(output_dir, "constant_speed_yaw_rate_inference.json"), "w"))
+    json.dump(cayr_preds, open(os.path.join(output_dir, "constant_acceleration_yaw_rate_inference.json"), "w"))
+    json.dump(oracle_preds, open(os.path.join(output_dir, "oracle_inference.json"), "w"))
 
 
 if __name__ == "__main__":
